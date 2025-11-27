@@ -45,8 +45,11 @@ algorithm = st.sidebar.selectbox(
 )
 solve_button = st.sidebar.button("Resolver Laberinto")
 
+# Estado para persistir el último camino calculado
+if "path" not in st.session_state:
+    st.session_state["path"] = []
+
 status = st.empty()
-path = []
 
 if solve_button:
     try:
@@ -54,9 +57,9 @@ if solve_button:
             status.warning(f"El algoritmo {algorithm} aún no está implementado. Usa BFS.")
         else:
             with st.spinner("Buscando camino con BFS..."):
-                path = solve_maze_bfs(MAZE, START, END) or []
-            if path:
-                status.success(f"Camino encontrado con BFS. Pasos: {len(path) - 1}")
+                st.session_state["path"] = solve_maze_bfs(MAZE, START, END) or []
+            if st.session_state["path"]:
+                status.success(f"Camino encontrado con BFS. Pasos: {len(st.session_state['path']) - 1}")
             else:
                 status.error("No se encontró un camino.")
     except Exception as exc:
@@ -64,4 +67,4 @@ if solve_button:
         st.exception(exc)
 
 # Siempre renderiza, con o sin solución encontrada
-render_maze(MAZE, path if path else None)
+render_maze(MAZE, st.session_state["path"] if st.session_state["path"] else None)
