@@ -1,11 +1,7 @@
 import streamlit as st
 from maze_solver import MAZE, START, END, solve_maze_bfs
 
-st.title("Visualizador de búsqueda en laberinto (BFS)")
-st.write(
-    "Este visor ejecuta el algoritmo de **búsqueda en amplitud (BFS)** sobre un laberinto "
-    "predefinido. Presiona *Resolver* para ver el camino encontrado."
-)
+st.title("Visualizador de Algoritmo de Búsqueda en Laberinto")
 
 def render_maze(maze, path=None):
     """Muestra el laberinto usando emojis para diferenciar cada celda."""

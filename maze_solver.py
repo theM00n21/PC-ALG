@@ -1,11 +1,15 @@
 import collections
 
 
+# ------------------------------
+# BFS para encontrar un camino
+# ------------------------------
 def solve_maze_bfs(maze, start, end):
     """Resuelve el laberinto usando búsqueda en amplitud (BFS)."""
     rows, cols = len(maze), len(maze[0])
     queue = collections.deque([(start, [start])])
-    visited = {start}
+    visited = set()
+    visited.add(start)
 
     while queue:
         (curr_row, curr_col), path = queue.popleft()
@@ -13,7 +17,7 @@ def solve_maze_bfs(maze, start, end):
         if (curr_row, curr_col) == end:
             return path
 
-        # Movimientos: arriba, abajo, izquierda, derecha
+        # Movimientos posibles: arriba, abajo, izquierda, derecha
         for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
             next_row, next_col = curr_row + dr, curr_col + dc
 
@@ -33,17 +37,17 @@ def solve_maze_bfs(maze, start, end):
 
 # Representación del laberinto (0: camino libre, 1: muro)
 MAZE = [
-    [0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-    [0, 1, 0, 1, 1, 0, 1, 0, 1, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 1, 0],
-    [1, 1, 1, 0, 1, 1, 1, 0, 1, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 1, 1, 1, 1, 1, 1, 0, 1, 0],
-    [0, 0, 0, 0, 0, 0, 1, 0, 1, 0],
-    [0, 1, 1, 1, 1, 0, 1, 0, 1, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 1, 0],
-    [0, 1, 1, 0, 0, 0, 1, 0, 0, 0],
-]
+        [0,1,0,0,0,0,1,0,0,0],
+        [0,1,0,1,1,0,1,0,1,0],
+        [0,0,0,0,1,0,0,0,1,0],
+        [1,1,1,0,1,1,1,0,1,0],
+        [0,0,0,0,0,0,0,0,1,0],
+        [0,1,1,1,1,1,1,0,1,0],
+        [0,0,0,0,0,0,1,0,1,0],
+        [0,1,1,1,1,0,1,0,1,0],
+        [0,0,0,0,1,0,0,0,1,0],
+        [0,1,1,0,0,0,1,0,0,0]
+    ]
 
 START = (0, 0)
 END = (9, 9)
