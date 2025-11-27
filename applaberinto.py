@@ -4,7 +4,6 @@ from maze_solver import MAZE, START, END, solve_maze_bfs
 st.title("Visualizador de Algoritmo de Búsqueda en Laberinto")
 
 def render_maze(maze, path=None):
-    """Muestra el laberinto usando emojis para diferenciar cada celda."""
     if path is None:
         path = []
 
@@ -35,32 +34,18 @@ def render_maze(maze, path=None):
 
 
 st.sidebar.header("Opciones")
-algorithm = st.sidebar.selectbox(
-    "Selecciona el algoritmo",
-    ["BFS", "DFS (no implementado)", "A* (no implementado)"],
-)
+algorithm = st.sidebar.selectbox("Selecciona el algoritmo", ["BFS", "DFS (no implementado)", "A* (no implementado)"])
 solve_button = st.sidebar.button("Resolver Laberinto")
 
-# Estado para persistir el último camino calculado
-if "path" not in st.session_state:
-    st.session_state["path"] = []
-
-status = st.empty()
+render_maze(MAZE)
 
 if solve_button:
-    try:
-        if algorithm != "BFS":
-            status.warning(f"El algoritmo {algorithm} aún no está implementado. Usa BFS.")
+    if algorithm != "BFS":
+        st.warning(f"El algoritmo {algorithm} aún no está implementado. Usa BFS.")
+    else:
+        path = solve_maze_bfs(MAZE, START, END)
+        if path:
+            st.success(f"¡Camino encontrado con {algorithm}!")
+            render_maze(MAZE, path)
         else:
-            with st.spinner("Buscando camino con BFS..."):
-                st.session_state["path"] = solve_maze_bfs(MAZE, START, END) or []
-            if st.session_state["path"]:
-                status.success(f"Camino encontrado con BFS. Pasos: {len(st.session_state['path']) - 1}")
-            else:
-                status.error("No se encontró un camino.")
-    except Exception as exc:
-        status.error("Ocurrió un error al resolver el laberinto.")
-        st.exception(exc)
-
-# Siempre renderiza, con o sin solución encontrada
-render_maze(MAZE, st.session_state["path"] if st.session_state["path"] else None)
+            st.error("No se encontró un camino.")
