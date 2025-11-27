@@ -2,6 +2,7 @@ import streamlit as st
 from maze_solver import MAZE, START, END, solve_maze_bfs
 
 st.title("Visualizador de Algoritmo de Búsqueda en Laberinto")
+st.write("App cargada (debug)")
 
 def render_maze(maze, path=None):
     if path is None:
@@ -40,10 +41,12 @@ solve_button = st.sidebar.button("Resolver Laberinto")
 render_maze(MAZE)
 
 if solve_button:
+    st.write("Click en Resolver (debug)")
     if algorithm != "BFS":
         st.warning(f"El algoritmo {algorithm} aún no está implementado. Usa BFS.")
     else:
         path = solve_maze_bfs(MAZE, START, END)
+        st.write("Path calculado, longitud:", len(path) if path else None)
         if path:
             st.success(f"¡Camino encontrado con {algorithm}!")
             render_maze(MAZE, path)
