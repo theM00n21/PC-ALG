@@ -1,5 +1,13 @@
+import time
 import streamlit as st
-from maze_solver import MAZE, START, END, solve_maze_bfs
+from maze_solver import (
+    MAZE,
+    START,
+    END,
+    solve_maze_bfs,
+    solve_maze_dfs,
+    solve_maze_astar,
+)
 
 st.title("Visualizador de Algoritmo de Búsqueda en Laberinto")
 
@@ -34,22 +42,31 @@ def render_maze(maze, path=None):
     st.markdown("<br>".join(display_maze), unsafe_allow_html=True)
 
 
+ALGORITHMS = {
+    "BFS": solve_maze_bfs,
+    "DFS": solve_maze_dfs,
+    "A*": solve_maze_astar,
+}
+
 st.sidebar.header("Opciones")
 algorithm = st.sidebar.selectbox(
     "Selecciona el algoritmo",
-    ["BFS", "DFS (no implementado)", "A* (no implementado)"],
+    list(ALGORITHMS.keys()),
 )
 solve_button = st.sidebar.button("Resolver Laberinto")
 
 render_maze(MAZE)
 
 if solve_button:
-    if algorithm != "BFS":
-        st.warning(f"El algoritmo {algorithm} aún no está implementado. Usa BFS.")
+    solver = ALGORITHMS.get(algorithm)
+    start_time = time.time()
+    path = solver(MAZE, START, END)
+    end_time = time.time()
+    if path:
+        st.success(
+            f"¡Camino encontrado con {algorithm}! Pasos: {len(path) - 1} "
+            f"- Tiempo: {end_time - start_time:.5f} s"
+        )
+        render_maze(MAZE, path)
     else:
-        path = solve_maze_bfs(MAZE, START, END)
-        if path:
-            st.success(f"¡Camino encontrado con {algorithm}!")
-            render_maze(MAZE, path)
-        else:
-            st.error("No se encontró un camino.")
+        st.error("No se encontró un camino.")

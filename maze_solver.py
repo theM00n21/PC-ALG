@@ -1,53 +1,124 @@
 import collections
+import heapq
 
 
 # ------------------------------
 # BFS para encontrar un camino
 # ------------------------------
 def solve_maze_bfs(maze, start, end):
-    """Resuelve el laberinto usando búsqueda en amplitud (BFS)."""
     rows, cols = len(maze), len(maze[0])
     queue = collections.deque([(start, [start])])
-    visited = set()
-    visited.add(start)
+    visited = {start}
 
     while queue:
         (curr_row, curr_col), path = queue.popleft()
-
         if (curr_row, curr_col) == end:
             return path
 
-        # Movimientos posibles: arriba, abajo, izquierda, derecha
         for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
-            next_row, next_col = curr_row + dr, curr_col + dc
-
-            if (
-                0 <= next_row < rows
-                and 0 <= next_col < cols
-                and maze[next_row][next_col] == 0
-                and (next_row, next_col) not in visited
-            ):
-                visited.add((next_row, next_col))
+            nr, nc = curr_row + dr, curr_col + dc
+            if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] == 0 and (nr, nc) not in visited:
+                visited.add((nr, nc))
                 new_path = list(path)
-                new_path.append((next_row, next_col))
-                queue.append(((next_row, next_col), new_path))
+                new_path.append((nr, nc))
+                queue.append(((nr, nc), new_path))
+    return None
 
-    return None  # No se encontró camino
+
+# ------------------------------
+# DFS (iterativo) para encontrar un camino
+# ------------------------------
+def solve_maze_dfs(maze, start, end):
+    rows, cols = len(maze), len(maze[0])
+    stack = [(start, [start])]
+    visited = {start}
+
+    while stack:
+        (curr_row, curr_col), path = stack.pop()
+        if (curr_row, curr_col) == end:
+            return path
+
+        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            nr, nc = curr_row + dr, curr_col + dc
+            if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] == 0 and (nr, nc) not in visited:
+                visited.add((nr, nc))
+                new_path = list(path)
+                new_path.append((nr, nc))
+                stack.append(((nr, nc), new_path))
+    return None
+
+
+# ------------------------------
+# A* para encontrar un camino
+# ------------------------------
+def solve_maze_astar(maze, start, end):
+    rows, cols = len(maze), len(maze[0])
+
+    def heuristic(a, b):
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])  # Manhattan
+
+    open_heap = []
+    heapq.heappush(open_heap, (heuristic(start, end), 0, start, [start]))
+    best_cost = {start: 0}
+
+    while open_heap:
+        _, cost, current, path = heapq.heappop(open_heap)
+        if current == end:
+            return path
+
+        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            nr, nc = current[0] + dr, current[1] + dc
+            if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] == 0:
+                new_cost = cost + 1
+                if (nr, nc) not in best_cost or new_cost < best_cost[(nr, nc)]:
+                    best_cost[(nr, nc)] = new_cost
+                    new_path = list(path)
+                    new_path.append((nr, nc))
+                    priority = new_cost + heuristic((nr, nc), end)
+                    heapq.heappush(open_heap, (priority, new_cost, (nr, nc), new_path))
+    return None
 
 
 # Representación del laberinto (0: camino libre, 1: muro)
 MAZE = [
-        [0,1,0,0,0,0,1,0,0,0],
-        [0,1,0,1,1,0,1,0,1,0],
-        [0,0,0,0,1,0,0,0,1,0],
-        [1,1,1,0,1,1,1,0,1,0],
-        [0,0,0,0,0,0,0,0,1,0],
-        [0,1,1,1,1,1,1,0,1,0],
-        [0,0,0,0,0,0,1,0,1,0],
-        [0,1,1,1,1,0,1,0,1,0],
-        [0,0,0,0,1,0,0,0,1,0],
-        [0,1,1,0,0,0,1,0,0,0]
-    ]
+[1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1],
+[1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,1],
+[1,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,0,1],
+[1,1,1,1,1,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,0,1,1,1,1],
+[1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,1,1],
+[1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,0,1,1],
+[1,0,0,0,1,0,0,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,1,0,1,1],
+[1,0,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,1,1,1],
+[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,0,1],
+[1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,1,1,1],
+[1,0,1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0,1,0,0,0,1,0,1,1],
+[1,0,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1,1],
+[1,0,0,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,0,1],
+[1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1],
+[1,0,0,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1,1],
+[1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,1,1,0,1,1],
+[1,0,0,0,0,0,1,0,0,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,1,1],
+[1,0,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,1],
+[1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1,1],
+[1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1],
+[1,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,1,0,1,0,1,1],
+[1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1,0,1,1],
+[1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,1,1],
+[1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,1,1,1],
+[1,0,0,0,1,0,0,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,0,1,0,0,0,0,0,1,1],
+[1,0,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1],
+[1,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,1,1],
+[1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,0,1,1],
+[1,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,0,1],
+[1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,0,0,0,1,0,1,1,1,1,1,1,1,0,1,1,1,1],
+[1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,1,0,0,0,1,0,1,1],
+[1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1],
+[1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,1],
+[1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,0,1,1],
+[1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1]
+]
 
-START = (0, 0)
-END = (9, 9)
+START = (0, 1)
+END = (36, 30)
